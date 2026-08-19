@@ -3,13 +3,16 @@
 }
 
 :root {
-    --black: #111111;
-    --white: #ffffff;
+    --black: #111;
+    --white: #fff;
     --gray-50: #fafafa;
-    --gray-100: #f4f4f4;
+    --gray-100: #f3f3f3;
     --gray-200: #e5e5e5;
-    --gray-400: #999999;
-    --gray-600: #666666;
+    --gray-400: #999;
+    --gray-600: #666;
+    --green: #16833b;
+    --red: #c62828;
+    --yellow: #d49b00;
     --radius: 16px;
 }
 
@@ -39,7 +42,7 @@ button {
 
 .topbar {
     background: var(--black);
-    color: var(--white);
+    color: white;
     padding: 18px 24px;
 }
 
@@ -50,11 +53,11 @@ button {
 
 .topbar p {
     margin: 4px 0 0;
-    color: #cccccc;
+    color: #ccc;
 }
 
 .main-nav {
-    background: var(--white);
+    background: white;
     border-bottom: 1px solid var(--gray-200);
     display: flex;
     gap: 6px;
@@ -78,7 +81,7 @@ button {
 .nav-btn:hover,
 .nav-btn.active {
     background: var(--black);
-    color: var(--white);
+    color: white;
 }
 
 main {
@@ -113,37 +116,38 @@ main {
     color: var(--gray-600);
 }
 
-button.primary-btn,
-button.secondary-btn,
-button.small-btn {
+.primary-btn,
+.secondary-btn,
+.small-btn {
     border-radius: 10px;
-    border: 0;
     font-weight: 700;
 }
 
 .primary-btn {
     background: var(--black);
-    color: var(--white);
+    color: white;
+    border: 0;
     padding: 12px 17px;
 }
 
 .secondary-btn {
     background: var(--gray-100);
     color: var(--black);
+    border: 1px solid var(--gray-200);
     padding: 11px 15px;
-    border: 1px solid var(--gray-200) !important;
 }
 
 .small-btn {
     background: var(--gray-100);
     color: var(--black);
+    border: 1px solid var(--gray-200);
     padding: 8px 11px;
 }
 
 .primary-btn:hover,
 .secondary-btn:hover,
 .small-btn:hover {
-    opacity: .78;
+    opacity: .75;
 }
 
 .stats-grid {
@@ -154,7 +158,7 @@ button.small-btn {
 }
 
 .stat-card {
-    background: var(--white);
+    background: white;
     border-radius: var(--radius);
     padding: 22px;
     box-shadow: 0 2px 8px rgba(0,0,0,.06);
@@ -182,7 +186,7 @@ button.small-btn {
 }
 
 .panel {
-    background: var(--white);
+    background: white;
     border-radius: var(--radius);
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,.06);
@@ -200,7 +204,7 @@ button.small-btn {
 .checkout-search {
     width: 100%;
     border: 1px solid var(--gray-200);
-    background: var(--white);
+    background: white;
     border-radius: 11px;
     padding: 13px 15px;
     outline: none;
@@ -208,12 +212,13 @@ button.small-btn {
 
 .inventory-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns:
+        repeat(auto-fill, minmax(260px, 1fr));
     gap: 16px;
 }
 
 .inventory-card {
-    background: var(--white);
+    background: white;
     border-radius: var(--radius);
     padding: 18px;
     box-shadow: 0 2px 8px rgba(0,0,0,.06);
@@ -221,14 +226,14 @@ button.small-btn {
 }
 
 .inventory-card.low-stock {
-    border-color: #999;
+    border-color: #aaa;
 }
 
 .inventory-card h3 {
     margin: 0 0 8px;
 }
 
-.inventory-card .sku {
+.sku {
     color: var(--gray-600);
     font-size: 13px;
 }
@@ -244,18 +249,8 @@ button.small-btn {
     font-weight: 800;
 }
 
-.barcode-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-}
 
-#barcodeSelectionCount {
-    color: var(--gray-600);
-    font-weight: 700;
-}
+/* ================= BARCODE PAGE ================= */
 
 .label-settings {
     display: flex;
@@ -283,7 +278,7 @@ button.small-btn {
 
 .label-controls select {
     border: 1px solid var(--gray-200);
-    background: var(--white);
+    background: white;
     border-radius: 10px;
     padding: 11px;
 }
@@ -305,14 +300,28 @@ button.small-btn {
     padding: 9px;
 }
 
+.barcode-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+#barcodeSelectionCount {
+    color: var(--gray-600);
+    font-weight: 700;
+}
+
 .barcode-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns:
+        repeat(auto-fill, minmax(220px, 1fr));
     gap: 16px;
 }
 
 .barcode-card {
-    background: var(--white);
+    background: white;
     border-radius: var(--radius);
     padding: 15px;
     box-shadow: 0 2px 8px rgba(0,0,0,.06);
@@ -362,9 +371,13 @@ button.small-btn {
     font-weight: 900;
 }
 
+
+/* ================= CHECKOUT ================= */
+
 .checkout-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-columns:
+        minmax(0, 1fr) 360px;
     gap: 20px;
     align-items: start;
 }
@@ -373,18 +386,75 @@ button.small-btn {
     min-width: 0;
 }
 
+.scanner-box {
+    background: white;
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 18px;
+    border: 2px solid var(--black);
+}
+
+.scanner-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.scanner-title > span {
+    font-size: 30px;
+}
+
+.scanner-title h3 {
+    margin: 0;
+}
+
+.scanner-title p {
+    margin: 3px 0 0;
+    color: var(--gray-600);
+}
+
+.scanner-input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid var(--gray-200);
+    border-radius: 10px;
+    outline: none;
+    font-size: 18px;
+}
+
+.scanner-input:focus {
+    border-color: var(--black);
+}
+
+.scan-message {
+    margin-top: 9px;
+    font-weight: 700;
+    color: var(--gray-600);
+    min-height: 22px;
+}
+
+.scan-message.success {
+    color: var(--green);
+}
+
+.scan-message.error {
+    color: var(--red);
+}
+
 .checkout-search {
     margin-bottom: 18px;
 }
 
 .checkout-product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    grid-template-columns:
+        repeat(auto-fill, minmax(175px, 1fr));
     gap: 15px;
 }
 
 .checkout-product {
-    background: var(--white);
+    background: white;
     border-radius: var(--radius);
     padding: 17px;
     box-shadow: 0 2px 8px rgba(0,0,0,.06);
@@ -415,8 +485,11 @@ button.small-btn {
     margin-top: 7px;
 }
 
+
+/* ================= SIDE CART ================= */
+
 .side-cart {
-    background: var(--white);
+    background: white;
     border-radius: var(--radius);
     box-shadow: 0 3px 12px rgba(0,0,0,.1);
     height: calc(100vh - 170px);
@@ -525,12 +598,11 @@ button.small-btn {
     border-radius: 10px;
     padding: 14px 8px;
     font-weight: 800;
-    cursor: pointer;
 }
 
 .cash-btn {
     background: var(--black);
-    color: var(--white);
+    color: white;
 }
 
 .card-btn {
@@ -539,22 +611,154 @@ button.small-btn {
     border: 1px solid var(--gray-200) !important;
 }
 
+
+/* ================= STOCK SCANNER ================= */
+
+.stock-scanner-layout {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr) 340px;
+    gap: 20px;
+    align-items: start;
+}
+
+.stock-scanner-main {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.stock-scanner-card {
+    background: white;
+    border-radius: 20px;
+    padding: 35px;
+    text-align: center;
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+}
+
+.big-scanner-icon {
+    font-size: 55px;
+    margin-bottom: 10px;
+}
+
+.stock-scanner-card h2 {
+    margin: 0;
+}
+
+.stock-scanner-card p {
+    color: var(--gray-600);
+}
+
+.big-scanner-input {
+    width: 100%;
+    padding: 17px;
+    font-size: 19px;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    outline: none;
+    text-align: center;
+}
+
+.big-scanner-input:focus {
+    border-color: var(--black);
+}
+
+.stock-product-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+    text-align: center;
+}
+
+.stock-product-card.hidden {
+    display: none;
+}
+
+.stock-product-name {
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.stock-product-sku {
+    color: var(--gray-600);
+    margin-top: 5px;
+}
+
+.current-stock {
+    margin: 25px 0;
+}
+
+.current-stock span {
+    display: block;
+    color: var(--gray-600);
+}
+
+.current-stock strong {
+    display: block;
+    font-size: 55px;
+    margin-top: 4px;
+}
+
+.stock-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.stock-buttons button {
+    border: 0;
+    border-radius: 12px;
+    padding: 17px;
+    font-weight: 900;
+    font-size: 17px;
+}
+
+.stock-add-btn {
+    background: var(--black);
+    color: white;
+}
+
+.stock-remove-btn {
+    background: var(--gray-100);
+    color: var(--black);
+    border: 1px solid var(--gray-200) !important;
+}
+
+.stock-help {
+    line-height: 1.7;
+}
+
+.stock-help li {
+    margin-bottom: 8px;
+}
+
+.tip {
+    background: var(--gray-100);
+    border-radius: 10px;
+    padding: 12px;
+}
+
+
+/* ================= EVENTS ================= */
+
+.events-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
 .event-card {
-    background: var(--white);
+    background: white;
     border-radius: var(--radius);
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
 
-.events-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-}
-
 .active-event {
     background: var(--black);
-    color: var(--white);
+    color: white;
     border-radius: var(--radius);
     padding: 20px;
     margin-bottom: 18px;
@@ -578,9 +782,13 @@ button.small-btn {
     font-size: 19px;
 }
 
+
+/* ================= SALES ================= */
+
 .sale-row {
     display: grid;
-    grid-template-columns: 1fr 100px 100px 100px;
+    grid-template-columns:
+        1fr 100px 100px 100px;
     gap: 12px;
     padding: 13px 0;
     border-bottom: 1px solid var(--gray-200);
@@ -592,6 +800,9 @@ button.small-btn {
     padding: 13px 0;
     border-bottom: 1px solid var(--gray-200);
 }
+
+
+/* ================= MODALS ================= */
 
 .modal {
     display: none;
@@ -609,7 +820,7 @@ button.small-btn {
 }
 
 .modal-box {
-    background: var(--white);
+    background: white;
     width: min(500px, 100%);
     max-height: 90vh;
     overflow-y: auto;
@@ -635,7 +846,6 @@ button.small-btn {
     width: 35px;
     height: 35px;
     font-size: 22px;
-    cursor: pointer;
 }
 
 .modal-box label {
@@ -658,26 +868,30 @@ button.small-btn {
     margin-top: 18px;
 }
 
+
+/* ================= PRINTING ================= */
+
 #printArea {
     display: none;
 }
 
 
-/* =========================================
-   MOBILE / IPAD
-========================================= */
+/* ================= TABLET ================= */
 
 @media (max-width: 900px) {
-
-    .checkout-layout {
-        grid-template-columns: minmax(0, 1fr) 320px;
-    }
 
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
+    .stock-scanner-layout {
+        grid-template-columns: 1fr;
+    }
+
 }
+
+
+/* ================= MOBILE ================= */
 
 @media (max-width: 700px) {
 
@@ -717,9 +931,7 @@ button.small-btn {
 }
 
 
-/* =========================================
-   PRINTING
-========================================= */
+/* ================= PRINT ================= */
 
 @media print {
 
@@ -729,7 +941,8 @@ button.small-btn {
 
     #printArea {
         display: grid !important;
-        grid-template-columns: repeat(4, var(--print-width));
+        grid-template-columns:
+            repeat(4, var(--print-width));
         gap: 5px;
         padding: 0;
     }

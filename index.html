@@ -10,51 +10,46 @@
 
     <link rel="stylesheet" href="style.css">
 
-    <!-- Barcode generator -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 </head>
 
 <body>
 
 <header class="topbar">
-
     <div>
         <h1>🧶 Crochet POS</h1>
         <p>Craft Fair Business Manager</p>
     </div>
-
 </header>
 
 
 <nav class="main-nav">
 
-    <button class="nav-btn active"
-            data-page="dashboard">
+    <button class="nav-btn active" data-page="dashboard">
         🏠 Dashboard
     </button>
 
-    <button class="nav-btn"
-            data-page="inventory">
+    <button class="nav-btn" data-page="inventory">
         📦 Inventory
     </button>
 
-    <button class="nav-btn"
-            data-page="barcodes">
+    <button class="nav-btn" data-page="barcodes">
         🏷️ Barcodes
     </button>
 
-    <button class="nav-btn"
-            data-page="checkout">
+    <button class="nav-btn" data-page="checkout">
         💳 Checkout
     </button>
 
-    <button class="nav-btn"
-            data-page="events">
+    <button class="nav-btn" data-page="stockScanner">
+        📦 Stock Scanner
+    </button>
+
+    <button class="nav-btn" data-page="events">
         🏪 Craft Fairs
     </button>
 
-    <button class="nav-btn"
-            data-page="sales">
+    <button class="nav-btn" data-page="sales">
         💰 Sales
     </button>
 
@@ -63,21 +58,16 @@
 
 <main>
 
-
 <!-- ================= DASHBOARD ================= -->
 
-<section id="dashboard"
-         class="page active">
+<section id="dashboard" class="page active">
 
     <div class="page-heading">
-
         <div>
             <h2>Dashboard</h2>
             <p>See how your crochet business is doing.</p>
         </div>
-
     </div>
-
 
     <div class="stats-grid">
 
@@ -107,28 +97,16 @@
 
     </div>
 
-
     <div class="dashboard-columns">
 
         <div class="panel">
-
-            <div class="panel-heading">
-                <h3>🟡 Low Stock</h3>
-            </div>
-
+            <h3>🟡 Low Stock</h3>
             <div id="dashboardLowStockList"></div>
-
         </div>
 
-
         <div class="panel">
-
-            <div class="panel-heading">
-                <h3>🏆 Best Sellers</h3>
-            </div>
-
+            <h3>🏆 Best Sellers</h3>
             <div id="dashboardBestSellers"></div>
-
         </div>
 
     </div>
@@ -136,11 +114,9 @@
 </section>
 
 
-
 <!-- ================= INVENTORY ================= -->
 
-<section id="inventory"
-         class="page">
+<section id="inventory" class="page">
 
     <div class="page-heading">
 
@@ -149,13 +125,11 @@
             <p>Manage your crochet products and stock.</p>
         </div>
 
-        <button class="primary-btn"
-                id="openAddProduct">
+        <button class="primary-btn" id="openAddProduct">
             ➕ Add Product
         </button>
 
     </div>
-
 
     <div class="toolbar">
 
@@ -165,18 +139,14 @@
 
     </div>
 
-
-    <div id="inventoryList"
-         class="inventory-grid"></div>
+    <div id="inventoryList" class="inventory-grid"></div>
 
 </section>
 
 
-
 <!-- ================= BARCODES ================= -->
 
-<section id="barcodes"
-         class="page">
+<section id="barcodes" class="page">
 
     <div class="page-heading">
 
@@ -185,8 +155,7 @@
             <p>Create and print your product labels.</p>
         </div>
 
-        <button class="primary-btn"
-                id="printBarcodes">
+        <button class="primary-btn" id="printBarcodes">
             🖨️ Print Selected
         </button>
 
@@ -196,15 +165,9 @@
     <div class="panel label-settings">
 
         <div>
-
             <h3>Label Size</h3>
-
-            <p>
-                Choose the size you want to print.
-            </p>
-
+            <p>Choose the size you want to print.</p>
         </div>
-
 
         <div class="label-controls">
 
@@ -214,8 +177,7 @@
                     Small — 1.5 × 1"
                 </option>
 
-                <option value="medium"
-                        selected>
+                <option value="medium" selected>
                     Medium — 2 × 1.25"
                 </option>
 
@@ -280,22 +242,16 @@
     </div>
 
 
-    <div id="barcodeList"
-         class="barcode-grid"></div>
+    <div id="barcodeList" class="barcode-grid"></div>
 
 </section>
 
 
-
 <!-- ================= CHECKOUT ================= -->
 
-<section id="checkout"
-         class="page checkout-page">
+<section id="checkout" class="page">
 
     <div class="checkout-layout">
-
-
-        <!-- PRODUCTS -->
 
         <div class="checkout-products-area">
 
@@ -303,9 +259,38 @@
 
                 <div>
                     <h2>💳 Checkout</h2>
-                    <p>
-                        Tap a product to add it to the cart.
-                    </p>
+                    <p>Scan a barcode or tap a product.</p>
+                </div>
+
+            </div>
+
+
+            <!-- BARCODE CHECKOUT SCANNER -->
+
+            <div class="scanner-box">
+
+                <div class="scanner-title">
+                    <span>🔎</span>
+
+                    <div>
+                        <h3>Scan Product</h3>
+                        <p>
+                            Scan a barcode to add 1 item
+                            to the cart.
+                        </p>
+                    </div>
+                </div>
+
+                <input id="checkoutBarcodeInput"
+                       class="scanner-input"
+                       type="text"
+                       inputmode="none"
+                       autocomplete="off"
+                       placeholder="Scan barcode here...">
+
+                <div id="checkoutScanMessage"
+                     class="scan-message">
+                    Ready to scan
                 </div>
 
             </div>
@@ -337,7 +322,6 @@
                     </span>
                 </div>
 
-
                 <button class="small-btn"
                         id="clearCart">
                     Clear
@@ -356,7 +340,7 @@
                     <p>Your cart is empty.</p>
 
                     <small>
-                        Tap a product to add it.
+                        Scan or tap a product.
                     </small>
 
                 </div>
@@ -411,51 +395,183 @@
 </section>
 
 
+<!-- ================= STOCK SCANNER ================= -->
+
+<section id="stockScanner" class="page">
+
+    <div class="page-heading">
+
+        <div>
+            <h2>📦 Stock Scanner</h2>
+            <p>
+                Scan a barcode to quickly add or remove
+                one item from inventory.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="stock-scanner-layout">
+
+
+        <div class="stock-scanner-main">
+
+            <div class="stock-scanner-card">
+
+                <div class="big-scanner-icon">
+                    📷
+                </div>
+
+                <h2>Scan a Barcode</h2>
+
+                <p>
+                    Scan a product barcode with your
+                    Bluetooth scanner.
+                </p>
+
+
+                <input id="stockBarcodeInput"
+                       class="big-scanner-input"
+                       type="text"
+                       inputmode="none"
+                       autocomplete="off"
+                       placeholder="Scan barcode here...">
+
+
+                <div id="stockScanMessage"
+                     class="scan-message">
+                    Ready to scan
+                </div>
+
+            </div>
+
+
+            <div id="stockProductCard"
+                 class="stock-product-card hidden">
+
+                <div class="stock-product-name"
+                     id="stockProductName">
+                    Product
+                </div>
+
+                <div class="stock-product-sku"
+                     id="stockProductSKU">
+                    SKU
+                </div>
+
+
+                <div class="current-stock">
+
+                    <span>Current Stock</span>
+
+                    <strong id="stockProductCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="stock-buttons">
+
+                    <button id="addStockButton"
+                            class="stock-add-btn">
+
+                        ➕ Add 1
+
+                    </button>
+
+
+                    <button id="removeStockButton"
+                            class="stock-remove-btn">
+
+                        ➖ Remove 1
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel stock-help">
+
+            <h3>How to use it</h3>
+
+            <ol>
+
+                <li>
+                    Scan a product barcode.
+                </li>
+
+                <li>
+                    The product will appear above.
+                </li>
+
+                <li>
+                    Tap <strong>Add 1</strong> to increase
+                    stock.
+                </li>
+
+                <li>
+                    Tap <strong>Remove 1</strong> to decrease
+                    stock.
+                </li>
+
+                <li>
+                    Scan another product when you're ready.
+                </li>
+
+            </ol>
+
+            <p class="tip">
+                💡 A Bluetooth barcode scanner can stay
+                connected to your iPad while you use this
+                screen.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
 
 <!-- ================= CRAFT FAIRS ================= -->
 
-<section id="events"
-         class="page">
+<section id="events" class="page">
 
     <div class="page-heading">
 
         <div>
             <h2>🏪 Craft Fairs</h2>
-            <p>
-                Track your sales for each event.
-            </p>
+            <p>Track your sales for each event.</p>
         </div>
 
-        <button class="primary-btn"
-                id="newEvent">
+        <button class="primary-btn" id="newEvent">
             ➕ New Craft Fair
         </button>
 
     </div>
 
-
     <div id="activeEvent"></div>
 
-
-    <div id="eventsList"
-         class="events-grid"></div>
+    <div id="eventsList" class="events-grid"></div>
 
 </section>
 
 
-
 <!-- ================= SALES ================= -->
 
-<section id="sales"
-         class="page">
+<section id="sales" class="page">
 
     <div class="page-heading">
 
         <div>
             <h2>💰 Sales</h2>
-            <p>
-                Review your craft-fair sales.
-            </p>
+            <p>Review your craft-fair sales.</p>
         </div>
 
     </div>
@@ -493,20 +609,13 @@
     <div class="dashboard-columns">
 
         <div class="panel">
-
             <h3>🏆 Best Sellers</h3>
-
             <div id="bestSellers"></div>
-
         </div>
 
-
         <div class="panel">
-
             <h3>💳 Payment Methods</h3>
-
             <div id="paymentBreakdown"></div>
-
         </div>
 
     </div>
@@ -525,11 +634,9 @@
 </main>
 
 
-
 <!-- ================= PRODUCT MODAL ================= -->
 
-<div id="productModal"
-     class="modal">
+<div id="productModal" class="modal">
 
     <div class="modal-box">
 
@@ -584,7 +691,7 @@
                value="2">
 
 
-        <label>SKU</label>
+        <label>SKU / Barcode</label>
 
         <input id="productSKU"
                placeholder="Leave blank to generate">
@@ -609,11 +716,9 @@
 </div>
 
 
-
 <!-- ================= EVENT MODAL ================= -->
 
-<div id="eventModal"
-     class="modal">
+<div id="eventModal" class="modal">
 
     <div class="modal-box">
 
@@ -659,9 +764,6 @@
 
 </div>
 
-
-
-<!-- PRINT AREA -->
 
 <div id="printArea"></div>
 

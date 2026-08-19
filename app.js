@@ -1,10 +1,5 @@
 /* =====================================================
-   CROCHET POS - PHASE 5
-===================================================== */
-
-
-/* =====================================================
-   DATA
+   CROCHET POS - PHASE 6
 ===================================================== */
 
 let products =
@@ -23,15 +18,15 @@ let events =
     ) || [];
 
 let activeEventId =
-    localStorage.getItem("crochetActiveEvent")
-    || "";
+    localStorage.getItem("crochetActiveEvent") || "";
 
 let cart = [];
 
-let selectedBarcodes =
-    new Set();
+let selectedBarcodes = new Set();
 
 let editingProductId = null;
+
+let scannedStockProductId = null;
 
 
 /* =====================================================
@@ -51,7 +46,7 @@ let labelSettings =
 
 
 /* =====================================================
-   SAVE
+   SAVE DATA
 ===================================================== */
 
 function saveData() {
@@ -109,27 +104,17 @@ function showPage(pageId) {
 
     document
         .querySelectorAll(".page")
-        .forEach(page => {
-
-            page.classList.remove(
-                "active"
-            );
-
-        });
+        .forEach(page =>
+            page.classList.remove("active")
+        );
 
 
     const page =
-        document.getElementById(
-            pageId
-        );
+        document.getElementById(pageId);
 
 
     if (page) {
-
-        page.classList.add(
-            "active"
-        );
-
+        page.classList.add("active");
     }
 
 
@@ -139,8 +124,7 @@ function showPage(pageId) {
 
             button.classList.toggle(
                 "active",
-                button.dataset.page ===
-                pageId
+                button.dataset.page === pageId
             );
 
         });
@@ -155,8 +139,19 @@ function showPage(pageId) {
     if (pageId === "barcodes")
         displayBarcodes();
 
-    if (pageId === "checkout")
+    if (pageId === "checkout") {
+
         displayCheckoutProducts();
+
+        focusCheckoutScanner();
+
+    }
+
+    if (pageId === "stockScanner") {
+
+        focusStockScanner();
+
+    }
 
     if (pageId === "events")
         displayEvents();
@@ -178,7 +173,9 @@ const productModal =
 
 
 document
-    .getElementById("openAddProduct")
+    .getElementById(
+        "openAddProduct"
+    )
     .addEventListener(
         "click",
         openAddProduct
@@ -197,32 +194,20 @@ function openAddProduct() {
         "Add Product";
 
 
-    document
-        .getElementById(
-            "productName"
-        )
-        .value = "";
+    [
+        "productName",
+        "productCategory",
+        "productPrice",
+        "productStock",
+        "productSKU"
+    ]
+    .forEach(id => {
 
+        document
+            .getElementById(id)
+            .value = "";
 
-    document
-        .getElementById(
-            "productCategory"
-        )
-        .value = "";
-
-
-    document
-        .getElementById(
-            "productPrice"
-        )
-        .value = "";
-
-
-    document
-        .getElementById(
-            "productStock"
-        )
-        .value = "";
+    });
 
 
     document
@@ -230,13 +215,6 @@ function openAddProduct() {
             "productLowStock"
         )
         .value = 2;
-
-
-    document
-        .getElementById(
-            "productSKU"
-        )
-        .value = "";
 
 
     productModal.classList.add(
@@ -289,8 +267,7 @@ function generateSKU() {
             "CR-" +
             Math.floor(
                 100000 +
-                Math.random() *
-                900000
+                Math.random() * 900000
             );
 
     } while (
@@ -299,7 +276,6 @@ function generateSKU() {
                 product.sku === sku
         )
     );
-
 
     return sku;
 }
@@ -388,10 +364,7 @@ function saveProduct() {
     }
 
 
-    if (
-        Number.isNaN(price) ||
-        price < 0
-    ) {
+    if (!Number.isFinite(price) || price < 0) {
 
         alert(
             "Please enter a valid price."
@@ -401,10 +374,7 @@ function saveProduct() {
     }
 
 
-    if (
-        Number.isNaN(stock) ||
-        stock < 0
-    ) {
+    if (!Number.isFinite(stock) || stock < 0) {
 
         alert(
             "Please enter valid stock."
@@ -415,10 +385,27 @@ function saveProduct() {
 
 
     if (!sku) {
+        sku = generateSKU();
+    }
 
-        sku =
-            generateSKU();
 
+    /* Prevent duplicate SKU */
+
+    const duplicate =
+        products.find(
+            p =>
+                p.sku === sku &&
+                p.id !== editingProductId
+        );
+
+
+    if (duplicate) {
+
+        alert(
+            "That SKU/barcode is already being used."
+        );
+
+        return;
     }
 
 
@@ -427,59 +414,43 @@ function saveProduct() {
         const product =
             products.find(
                 p =>
-                    p.id ===
-                    editingProductId
+                    p.id === editingProductId
             );
 
 
         if (product) {
 
-            product.name =
-                name;
+            product.name = name;
 
-            product.category =
-                category;
+            product.category = category;
 
-            product.price =
-                price;
+            product.price = price;
 
-            product.stock =
-                stock;
+            product.stock = stock;
 
-            product.lowStock =
-                lowStock;
+            product.lowStock = lowStock;
 
-            product.sku =
-                sku;
+            product.sku = sku;
 
         }
 
-    }
-
-    else {
+    } else {
 
         products.push({
 
-            id:
-                Date.now(),
+            id: Date.now(),
 
-            name:
-                name,
+            name,
 
-            category:
-                category,
+            category,
 
-            price:
-                price,
+            price,
 
-            stock:
-                stock,
+            stock,
 
-            lowStock:
-                lowStock,
+            lowStock,
 
-            sku:
-                sku
+            sku
 
         });
 
@@ -503,8 +474,7 @@ function editProduct(id) {
 
     const product =
         products.find(
-            p =>
-                p.id === id
+            p => p.id === id
         );
 
 
@@ -512,8 +482,7 @@ function editProduct(id) {
         return;
 
 
-    editingProductId =
-        id;
+    editingProductId = id;
 
 
     document
@@ -587,8 +556,7 @@ function deleteProduct(id) {
 
     const product =
         products.find(
-            p =>
-                p.id === id
+            p => p.id === id
         );
 
 
@@ -606,14 +574,11 @@ function deleteProduct(id) {
 
     products =
         products.filter(
-            p =>
-                p.id !== id
+            p => p.id !== id
         );
 
 
-    selectedBarcodes.delete(
-        id
-    );
+    selectedBarcodes.delete(id);
 
 
     cart =
@@ -663,42 +628,33 @@ function displayInventory() {
 
     const filtered =
         products.filter(
-            product => {
+            product =>
 
-                return (
-                    product.name
-                        .toLowerCase()
-                        .includes(search)
+                product.name
+                    .toLowerCase()
+                    .includes(search)
 
-                    ||
+                ||
 
-                    product.sku
-                        .toLowerCase()
-                        .includes(search)
+                String(product.sku)
+                    .toLowerCase()
+                    .includes(search)
 
-                    ||
+                ||
 
-                    (product.category || "")
-                        .toLowerCase()
-                        .includes(search)
-                );
+                (product.category || "")
+                    .toLowerCase()
+                    .includes(search)
 
-            }
         );
 
 
     if (!filtered.length) {
 
         list.innerHTML = `
-
             <div class="panel">
-
-                <p>
-                    No products found.
-                </p>
-
+                <p>No products found.</p>
             </div>
-
         `;
 
         return;
@@ -706,45 +662,38 @@ function displayInventory() {
 
 
     list.innerHTML =
-        filtered.map(
-            product => {
+        filtered
+            .map(product => {
 
                 const low =
                     product.stock <=
                     product.lowStock;
 
+                const out =
+                    product.stock <= 0;
+
 
                 return `
 
-                    <div
-                        class="
+                    <div class="
                         inventory-card
-                        ${low
-                            ? "low-stock"
-                            : ""
-                        }">
+                        ${low ? "low-stock" : ""}
+                    ">
 
                         <h3>
-
                             ${escapeHTML(
                                 product.name
                             )}
-
                         </h3>
 
-
                         <div class="sku">
-
                             SKU:
                             ${escapeHTML(
                                 product.sku
                             )}
-
                         </div>
 
-
                         <p>
-
                             ${
                                 product.category
                                 ? escapeHTML(
@@ -752,72 +701,51 @@ function displayInventory() {
                                   )
                                 : "No category"
                             }
-
                         </p>
 
-
                         <strong>
-
                             $${Number(
                                 product.price
                             ).toFixed(2)}
-
                         </strong>
 
-
-                        <div
-                            class="stock-number">
-
+                        <div class="stock-number">
                             ${product.stock}
+                        </div>
+
+                        <div class="stock-warning">
+
+                            ${
+                                out
+                                ? "🔴 Out of Stock"
+                                : low
+                                ? "🟡 Low Stock"
+                                : "🟢 In Stock"
+                            }
 
                         </div>
 
-
-                        ${
-                            low
-
-                            ?
-
-                            `<div
-                                class="stock-warning">
-
-                                🟡 Low Stock
-
-                            </div>`
-
-                            :
-
-                            `<div
-                                class="stock-warning">
-
-                                🟢 In Stock
-
-                            </div>`
-
-                        }
-
-
-                        <div
-                            class="modal-buttons">
+                        <div class="modal-buttons">
 
                             <button
                                 class="secondary-btn"
                                 onclick="
-                                editProduct(
-                                    ${product.id}
-                                )">
+                                    editProduct(
+                                        ${product.id}
+                                    )
+                                ">
 
                                 ✏️ Edit
 
                             </button>
 
-
                             <button
                                 class="secondary-btn"
                                 onclick="
-                                deleteProduct(
-                                    ${product.id}
-                                )">
+                                    deleteProduct(
+                                        ${product.id}
+                                    )
+                                ">
 
                                 🗑️ Delete
 
@@ -829,14 +757,14 @@ function displayInventory() {
 
                 `;
 
-            }
-        ).join("");
+            })
+            .join("");
 
 }
 
 
 /* =====================================================
-   BARCODES
+   BARCODE LABEL SETTINGS
 ===================================================== */
 
 document
@@ -855,7 +783,7 @@ document
     )
     .addEventListener(
         "click",
-        applyCustomLabelSize
+        applyCustomSize
     );
 
 
@@ -876,71 +804,50 @@ function changeLabelSize() {
             );
 
 
-    if (
-        size === "custom"
-    ) {
+    if (size === "custom") {
 
-        custom.classList.add(
-            "show"
-        );
+        custom.classList.add("show");
+
+        return;
 
     }
 
-    else {
 
-        custom.classList.remove(
-            "show"
-        );
+    custom.classList.remove("show");
 
 
-        if (
-            size === "small"
-        ) {
+    if (size === "small") {
 
-            labelSettings.width =
-                1.5;
+        labelSettings.width = 1.5;
 
-            labelSettings.height =
-                1;
-
-        }
-
-
-        if (
-            size === "medium"
-        ) {
-
-            labelSettings.width =
-                2;
-
-            labelSettings.height =
-                1.25;
-
-        }
-
-
-        if (
-            size === "large"
-        ) {
-
-            labelSettings.width =
-                3;
-
-            labelSettings.height =
-                2;
-
-        }
-
-
-        labelSettings.size =
-            size;
-
-
-        saveData();
-
-        displayBarcodes();
+        labelSettings.height = 1;
 
     }
+
+
+    if (size === "medium") {
+
+        labelSettings.width = 2;
+
+        labelSettings.height = 1.25;
+
+    }
+
+
+    if (size === "large") {
+
+        labelSettings.width = 3;
+
+        labelSettings.height = 2;
+
+    }
+
+
+    labelSettings.size = size;
+
+    saveData();
+
+    displayBarcodes();
 
 }
 
@@ -982,14 +889,11 @@ function applyCustomSize() {
 
     labelSettings = {
 
-        size:
-            "custom",
+        size: "custom",
 
-        width:
-            width,
+        width,
 
-        height:
-            height
+        height
 
     };
 
@@ -1000,6 +904,10 @@ function applyCustomSize() {
 
 }
 
+
+/* =====================================================
+   DISPLAY BARCODES
+===================================================== */
 
 function displayBarcodes() {
 
@@ -1015,15 +923,9 @@ function displayBarcodes() {
     if (!products.length) {
 
         list.innerHTML = `
-
             <div class="panel">
-
-                <p>
-                    Add a product first.
-                </p>
-
+                <p>Add a product first.</p>
             </div>
-
         `;
 
         return;
@@ -1033,202 +935,145 @@ function displayBarcodes() {
     list.innerHTML = "";
 
 
-    products.forEach(
-        product => {
+    products.forEach(product => {
 
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "barcode-card";
-
-
-            const checked =
-                selectedBarcodes.has(
-                    product.id
-                );
-
-
-            card.innerHTML = `
-
-                <label
-                    class="barcode-select">
-
-                    <input
-                        type="checkbox"
-                        data-barcode-id="
-                            ${product.id}
-                        "
-                        ${
-                            checked
-                            ? "checked"
-                            : ""
-                        }>
-
-                    Select
-
-                </label>
-
-
-                <div
-                    class="
-                    barcode-preview">
-
-                    <div
-                        class="
-                        barcode-preview-name">
-
-                        ${escapeHTML(
-                            product.name
-                        )}
-
-                    </div>
-
-
-                    <svg
-                        id="
-                        barcode-preview-${product.id}">
-
-                    </svg>
-
-
-                    <div
-                        class="
-                        barcode-preview-sku">
-
-                        ${escapeHTML(
-                            product.sku
-                        )}
-
-                    </div>
-
-
-                    <div
-                        class="
-                        barcode-preview-price">
-
-                        $${Number(
-                            product.price
-                        ).toFixed(2)}
-
-                    </div>
-
-                </div>
-
-            `;
-
-
-            list.appendChild(
-                card
+        const card =
+            document.createElement(
+                "div"
             );
 
 
-            const svg =
-                document.getElementById(
-                    `barcode-preview-${product.id}`
-                );
+        card.className =
+            "barcode-card";
 
 
-            try {
+        card.innerHTML = `
 
-                JsBarcode(
-                    svg,
-                    String(
+            <label class="barcode-select">
+
+                <input
+                    type="checkbox"
+                    data-barcode-id="${product.id}"
+                    ${
+                        selectedBarcodes.has(
+                            product.id
+                        )
+                        ? "checked"
+                        : ""
+                    }
+                >
+
+                Select
+
+            </label>
+
+
+            <div class="barcode-preview">
+
+                <div class="barcode-preview-name">
+                    ${escapeHTML(
+                        product.name
+                    )}
+                </div>
+
+                <svg
+                    id="
+                    barcode-preview-${product.id}">
+                </svg>
+
+                <div class="barcode-preview-sku">
+                    ${escapeHTML(
                         product.sku
-                    ),
-                    {
+                    )}
+                </div>
 
-                        format:
-                            "CODE128",
+                <div class="barcode-preview-price">
+                    $${Number(
+                        product.price
+                    ).toFixed(2)}
+                </div>
 
-                        width:
-                            1.8,
+            </div>
 
-                        height:
-                            48,
-
-                        displayValue:
-                            false,
-
-                        margin:
-                            3
-
-                    }
-                );
-
-            }
-
-            catch(error) {
-
-                console.error(
-                    "Barcode error:",
-                    error
-                );
-
-            }
+        `;
 
 
-            card
-                .querySelector(
-                    "input"
-                )
-                .addEventListener(
-                    "change",
-                    function() {
-
-                        if (
-                            this.checked
-                        ) {
-
-                            selectedBarcodes.add(
-                                product.id
-                            );
-
-                        }
-
-                        else {
-
-                            selectedBarcodes.delete(
-                                product.id
-                            );
-
-                        }
+        list.appendChild(card);
 
 
-                        updateBarcodeSelectionCount();
+        const svg =
+            card.querySelector("svg");
+
+
+        generateBarcode(
+            svg,
+            product.sku,
+            1.8,
+            48
+        );
+
+
+        card
+            .querySelector("input")
+            .addEventListener(
+                "change",
+                event => {
+
+                    if (
+                        event.target.checked
+                    ) {
+
+                        selectedBarcodes.add(
+                            product.id
+                        );
+
+                    } else {
+
+                        selectedBarcodes.delete(
+                            product.id
+                        );
 
                     }
-                );
 
-        }
-    );
+                    updateBarcodeSelectionCount();
+
+                }
+            );
+
+    });
 
 }
 
 
-function selectAllBarcodes() {
+function generateBarcode(
+    element,
+    value,
+    width = 1.8,
+    height = 48
+) {
 
-    products.forEach(
-        product =>
-            selectedBarcodes.add(
-                product.id
-            )
-    );
+    try {
 
+        JsBarcode(
+            element,
+            String(value),
+            {
+                format: "CODE128",
+                width,
+                height,
+                displayValue: false,
+                margin: 3
+            }
+        );
 
-    displayBarcodes();
+    } catch (error) {
 
-}
+        console.error(
+            "Barcode error:",
+            error
+        );
 
-
-function clearBarcodeSelection() {
-
-    selectedBarcodes.clear();
-
-    displayBarcodes();
+    }
 
 }
 
@@ -1243,6 +1088,43 @@ function updateBarcodeSelectionCount() {
         `${selectedBarcodes.size} selected`;
 
 }
+
+
+document
+    .getElementById(
+        "selectAllBarcodes"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            products.forEach(
+                product =>
+                    selectedBarcodes.add(
+                        product.id
+                    )
+            );
+
+            displayBarcodes();
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "clearBarcodeSelection"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            selectedBarcodes.clear();
+
+            displayBarcodes();
+
+        }
+    );
 
 
 /* =====================================================
@@ -1301,117 +1183,62 @@ function printBarcodes() {
     );
 
 
-    selected.forEach(
-        product => {
+    selected.forEach(product => {
 
-            const label =
-                document.createElement(
-                    "div"
-                );
-
-
-            label.className =
-                "print-label";
-
-
-            const svgId =
-                `print-barcode-${product.id}`;
-
-
-            label.innerHTML = `
-
-                <div
-                    class="
-                    print-label-name">
-
-                    ${escapeHTML(
-                        product.name
-                    )}
-
-                </div>
-
-
-                <svg
-                    id="${svgId}">
-                </svg>
-
-
-                <div
-                    class="
-                    print-label-sku">
-
-                    ${escapeHTML(
-                        product.sku
-                    )}
-
-                </div>
-
-
-                <div
-                    class="
-                    print-label-price">
-
-                    $${Number(
-                        product.price
-                    ).toFixed(2)}
-
-                </div>
-
-            `;
-
-
-            printArea.appendChild(
-                label
+        const label =
+            document.createElement(
+                "div"
             );
 
 
-            try {
+        label.className =
+            "print-label";
 
-                JsBarcode(
-                    `#${svgId}`,
-                    String(
-                        product.sku
-                    ),
-                    {
 
-                        format:
-                            "CODE128",
+        const svgId =
+            `print-barcode-${product.id}`;
 
-                        width:
-                            1.5,
 
-                        height:
-                            35,
+        label.innerHTML = `
 
-                        displayValue:
-                            false,
+            <div class="print-label-name">
+                ${escapeHTML(
+                    product.name
+                )}
+            </div>
 
-                        margin:
-                            2
+            <svg id="${svgId}"></svg>
 
-                    }
-                );
+            <div class="print-label-sku">
+                ${escapeHTML(
+                    product.sku
+                )}
+            </div>
 
-            }
+            <div class="print-label-price">
+                $${Number(
+                    product.price
+                ).toFixed(2)}
+            </div>
 
-            catch(error) {
+        `;
 
-                console.error(
-                    error
-                );
 
-            }
+        printArea.appendChild(label);
 
-        }
-    );
+
+        generateBarcode(
+            document.getElementById(svgId),
+            product.sku,
+            1.5,
+            35
+        );
+
+    });
 
 
     setTimeout(
-        () => {
-
-            window.print();
-
-        },
+        () => window.print(),
         400
     );
 
@@ -1419,7 +1246,7 @@ function printBarcodes() {
 
 
 /* =====================================================
-   CHECKOUT
+   CHECKOUT SEARCH
 ===================================================== */
 
 document
@@ -1431,6 +1258,10 @@ document
         displayCheckoutProducts
     );
 
+
+/* =====================================================
+   CHECKOUT PRODUCTS
+===================================================== */
 
 function displayCheckoutProducts() {
 
@@ -1451,35 +1282,30 @@ function displayCheckoutProducts() {
 
     const filtered =
         products.filter(
-            product => {
+            product =>
 
-                return (
+                product.name
+                    .toLowerCase()
+                    .includes(search)
 
-                    product.name
-                        .toLowerCase()
-                        .includes(search)
+                ||
 
-                    ||
+                String(product.sku)
+                    .toLowerCase()
+                    .includes(search)
 
-                    product.sku
-                        .toLowerCase()
-                        .includes(search)
+                ||
 
-                    ||
+                (product.category || "")
+                    .toLowerCase()
+                    .includes(search)
 
-                    (product.category || "")
-                        .toLowerCase()
-                        .includes(search)
-
-                );
-
-            }
         );
 
 
     list.innerHTML =
-        filtered.map(
-            product => {
+        filtered
+            .map(product => {
 
                 const out =
                     product.stock <= 0;
@@ -1489,22 +1315,21 @@ function displayCheckoutProducts() {
 
                     <div
                         class="
-                        checkout-product
-                        ${out
-                            ? "out-of-stock"
-                            : ""
-                        }"
+                            checkout-product
+                            ${out
+                                ? "out-of-stock"
+                                : ""
+                            }
+                        "
                         data-product-id="
-                            ${product.id}">
+                            ${product.id}
+                    ">
 
                         <h3>
-
                             ${escapeHTML(
                                 product.name
                             )}
-
                         </h3>
-
 
                         <div
                             class="
@@ -1515,7 +1340,6 @@ function displayCheckoutProducts() {
                             ).toFixed(2)}
 
                         </div>
-
 
                         <div
                             class="
@@ -1533,8 +1357,8 @@ function displayCheckoutProducts() {
 
                 `;
 
-            }
-        ).join("");
+            })
+            .join("");
 
 
     list
@@ -1562,6 +1386,208 @@ function displayCheckoutProducts() {
 
 
 /* =====================================================
+   CHECKOUT BARCODE SCANNER
+===================================================== */
+
+const checkoutScanner =
+    document.getElementById(
+        "checkoutBarcodeInput"
+    );
+
+
+checkoutScanner.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Enter"
+        ) {
+
+            event.preventDefault();
+
+            processCheckoutScan();
+
+        }
+
+    }
+);
+
+
+function processCheckoutScan() {
+
+    const code =
+        checkoutScanner.value
+            .trim();
+
+
+    if (!code)
+        return;
+
+
+    const product =
+        findProductByBarcode(
+            code
+        );
+
+
+    if (!product) {
+
+        showCheckoutScanMessage(
+            `❌ Barcode not found: ${code}`,
+            true
+        );
+
+        checkoutScanner.select();
+
+        return;
+    }
+
+
+    if (
+        product.stock <= 0
+    ) {
+
+        showCheckoutScanMessage(
+            `🔴 ${product.name} is out of stock.`,
+            true
+        );
+
+        checkoutScanner.select();
+
+        return;
+    }
+
+
+    addToCart(
+        product.id
+    );
+
+
+    showCheckoutScanMessage(
+        `✅ Added 1 × ${product.name}`,
+        false
+    );
+
+
+    checkoutScanner.value = "";
+
+    checkoutScanner.focus();
+
+}
+
+
+function showCheckoutScanMessage(
+    message,
+    error
+) {
+
+    const element =
+        document.getElementById(
+            "checkoutScanMessage"
+        );
+
+
+    element.textContent =
+        message;
+
+
+    element.classList.toggle(
+        "error",
+        error
+    );
+
+
+    element.classList.toggle(
+        "success",
+        !error
+    );
+
+
+    setTimeout(
+        () => {
+
+            if (
+                !document
+                    .getElementById(
+                        "checkoutBarcodeInput"
+                    )
+                    .value
+            ) {
+
+                element.textContent =
+                    "Ready to scan";
+
+                element.classList.remove(
+                    "error",
+                    "success"
+                );
+
+            }
+
+        },
+        2000
+    );
+
+}
+
+
+function focusCheckoutScanner() {
+
+    setTimeout(
+        () => {
+
+            const page =
+                document.getElementById(
+                    "checkout"
+                );
+
+
+            if (
+                page &&
+                page.classList.contains(
+                    "active"
+                )
+            ) {
+
+                checkoutScanner.focus();
+
+            }
+
+        },
+        100
+    );
+
+}
+
+
+/* =====================================================
+   FIND PRODUCT BY BARCODE
+===================================================== */
+
+function findProductByBarcode(
+    code
+) {
+
+    const cleanCode =
+        String(code)
+            .trim()
+            .toLowerCase();
+
+
+    return products.find(
+        product =>
+            String(
+                product.sku
+            )
+            .trim()
+            .toLowerCase() ===
+            cleanCode
+    );
+
+}
+
+
+/* =====================================================
    CART
 ===================================================== */
 
@@ -1572,8 +1598,7 @@ function addToCart(
     const product =
         products.find(
             p =>
-                p.id ===
-                productId
+                p.id === productId
         );
 
 
@@ -1586,10 +1611,11 @@ function addToCart(
     ) {
 
         alert(
-            "This product is out of stock."
+            `${product.name} is out of stock.`
         );
 
         return;
+
     }
 
 
@@ -1613,22 +1639,19 @@ function addToCart(
             );
 
             return;
+
         }
 
 
         item.quantity++;
 
-    }
-
-    else {
+    } else {
 
         cart.push({
 
-            productId:
-                productId,
+            productId,
 
-            quantity:
-                1
+            quantity: 1
 
         });
 
@@ -1656,8 +1679,7 @@ function changeCartQuantity(
     const product =
         products.find(
             p =>
-                p.id ===
-                productId
+                p.id === productId
         );
 
 
@@ -1679,11 +1701,11 @@ function changeCartQuantity(
         );
 
         return;
+
     }
 
 
-    item.quantity +=
-        amount;
+    item.quantity += amount;
 
 
     if (
@@ -1750,20 +1772,18 @@ function displayCart() {
                 </p>
 
                 <small>
-                    Tap a product to add it.
+                    Scan or tap a product.
                 </small>
 
             </div>
 
         `;
 
-    }
-
-    else {
+    } else {
 
         list.innerHTML =
-            cart.map(
-                item => {
+            cart
+                .map(item => {
 
                     const product =
                         products.find(
@@ -1782,9 +1802,7 @@ function displayCart() {
                         item.quantity;
 
 
-                    subtotal +=
-                        total;
-
+                    subtotal += total;
 
                     itemCount +=
                         item.quantity;
@@ -1792,9 +1810,7 @@ function displayCart() {
 
                     return `
 
-                        <div
-                            class="
-                            cart-item">
+                        <div class="cart-item">
 
                             <div>
 
@@ -1807,7 +1823,6 @@ function displayCart() {
                                     )}
 
                                 </div>
-
 
                                 <div
                                     class="
@@ -1824,13 +1839,9 @@ function displayCart() {
 
                                     </button>
 
-
                                     <strong>
-
                                         ${item.quantity}
-
                                     </strong>
-
 
                                     <button
                                         onclick="
@@ -1847,7 +1858,6 @@ function displayCart() {
 
                             </div>
 
-
                             <div
                                 class="
                                 cart-item-price">
@@ -1860,8 +1870,8 @@ function displayCart() {
 
                     `;
 
-                }
-            ).join("");
+                })
+                .join("");
 
     }
 
@@ -1897,7 +1907,7 @@ function displayCart() {
 
 
 /* =====================================================
-   CHECKOUT BUTTONS
+   CHECKOUT
 ===================================================== */
 
 document
@@ -1907,9 +1917,7 @@ document
     .addEventListener(
         "click",
         () =>
-            completeSale(
-                "Cash"
-            )
+            completeSale("Cash")
     );
 
 
@@ -1920,9 +1928,7 @@ document
     .addEventListener(
         "click",
         () =>
-            completeSale(
-                "Card"
-            )
+            completeSale("Card")
     );
 
 
@@ -1937,6 +1943,7 @@ function completeSale(
         );
 
         return;
+
     }
 
 
@@ -1946,11 +1953,10 @@ function completeSale(
             "Please select a craft fair first."
         );
 
-        showPage(
-            "events"
-        );
+        showPage("events");
 
         return;
+
     }
 
 
@@ -1977,6 +1983,7 @@ function completeSale(
             );
 
             return;
+
         }
 
     }
@@ -1989,64 +1996,59 @@ function completeSale(
     const saleItems = [];
 
 
-    cart.forEach(
-        item => {
+    cart.forEach(item => {
 
-            const product =
-                products.find(
-                    p =>
-                        p.id ===
-                        item.productId
-                );
-
-
-            const lineTotal =
-                product.price *
-                item.quantity;
+        const product =
+            products.find(
+                p =>
+                    p.id ===
+                    item.productId
+            );
 
 
-            total +=
-                lineTotal;
+        const lineTotal =
+            product.price *
+            item.quantity;
 
 
-            itemCount +=
-                item.quantity;
+        total += lineTotal;
+
+        itemCount +=
+            item.quantity;
 
 
-            product.stock -=
-                item.quantity;
+        product.stock -=
+            item.quantity;
 
 
-            saleItems.push({
+        saleItems.push({
 
-                productId:
-                    product.id,
+            productId:
+                product.id,
 
-                name:
-                    product.name,
+            name:
+                product.name,
 
-                sku:
-                    product.sku,
+            sku:
+                product.sku,
 
-                quantity:
-                    item.quantity,
+            quantity:
+                item.quantity,
 
-                price:
-                    product.price,
+            price:
+                product.price,
 
-                total:
-                    lineTotal
+            total:
+                lineTotal
 
-            });
+        });
 
-        }
-    );
+    });
 
 
     sales.push({
 
-        id:
-            Date.now(),
+        id: Date.now(),
 
         date:
             new Date().toISOString(),
@@ -2054,14 +2056,11 @@ function completeSale(
         eventId:
             activeEventId,
 
-        paymentMethod:
-            paymentMethod,
+        paymentMethod,
 
-        total:
-            total,
+        total,
 
-        itemCount:
-            itemCount,
+        itemCount,
 
         items:
             saleItems
@@ -2076,11 +2075,348 @@ function completeSale(
 
     refreshEverything();
 
-
     alert(
         `Sale Complete!\n\n` +
         `${paymentMethod}\n` +
         `$${total.toFixed(2)}`
+    );
+
+}
+
+
+/* =====================================================
+   STOCK SCANNER
+===================================================== */
+
+const stockScanner =
+    document.getElementById(
+        "stockBarcodeInput"
+    );
+
+
+stockScanner.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Enter"
+        ) {
+
+            event.preventDefault();
+
+            processStockScan();
+
+        }
+
+    }
+);
+
+
+function processStockScan() {
+
+    const code =
+        stockScanner.value
+            .trim();
+
+
+    if (!code)
+        return;
+
+
+    const product =
+        findProductByBarcode(
+            code
+        );
+
+
+    if (!product) {
+
+        showStockScanMessage(
+            `❌ Barcode not found: ${code}`,
+            true
+        );
+
+        hideStockProduct();
+
+        stockScanner.select();
+
+        return;
+    }
+
+
+    scannedStockProductId =
+        product.id;
+
+
+    displayScannedStockProduct();
+
+
+    showStockScanMessage(
+        `✅ Found ${product.name}`,
+        false
+    );
+
+
+    stockScanner.value = "";
+
+    stockScanner.focus();
+
+}
+
+
+function displayScannedStockProduct() {
+
+    const product =
+        products.find(
+            p =>
+                p.id ===
+                scannedStockProductId
+        );
+
+
+    if (!product) {
+
+        hideStockProduct();
+
+        return;
+
+    }
+
+
+    document
+        .getElementById(
+            "stockProductCard"
+        )
+        .classList.remove(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "stockProductName"
+        )
+        .textContent =
+        product.name;
+
+
+    document
+        .getElementById(
+            "stockProductSKU"
+        )
+        .textContent =
+        `SKU: ${product.sku}`;
+
+
+    document
+        .getElementById(
+            "stockProductCount"
+        )
+        .textContent =
+        product.stock;
+
+}
+
+
+function hideStockProduct() {
+
+    scannedStockProductId =
+        null;
+
+
+    document
+        .getElementById(
+            "stockProductCard"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+}
+
+
+function addOneStock() {
+
+    if (
+        !scannedStockProductId
+    ) {
+
+        alert(
+            "Scan a product first."
+        );
+
+        return;
+
+    }
+
+
+    const product =
+        products.find(
+            p =>
+                p.id ===
+                scannedStockProductId
+        );
+
+
+    if (!product)
+        return;
+
+
+    product.stock++;
+
+
+    saveData();
+
+    displayScannedStockProduct();
+
+    refreshEverything();
+
+
+    showStockScanMessage(
+        `➕ Added 1 — ${product.name} now has ${product.stock}`,
+        false
+    );
+
+
+    stockScanner.focus();
+
+}
+
+
+function removeOneStock() {
+
+    if (
+        !scannedStockProductId
+    ) {
+
+        alert(
+            "Scan a product first."
+        );
+
+        return;
+
+    }
+
+
+    const product =
+        products.find(
+            p =>
+                p.id ===
+                scannedStockProductId
+        );
+
+
+    if (!product)
+        return;
+
+
+    if (
+        product.stock <= 0
+    ) {
+
+        showStockScanMessage(
+            "🔴 Stock is already 0.",
+            true
+        );
+
+        return;
+
+    }
+
+
+    product.stock--;
+
+
+    saveData();
+
+    displayScannedStockProduct();
+
+    refreshEverything();
+
+
+    showStockScanMessage(
+        `➖ Removed 1 — ${product.name} now has ${product.stock}`,
+        false
+    );
+
+
+    stockScanner.focus();
+
+}
+
+
+document
+    .getElementById(
+        "addStockButton"
+    )
+    .addEventListener(
+        "click",
+        addOneStock
+    );
+
+
+document
+    .getElementById(
+        "removeStockButton"
+    )
+    .addEventListener(
+        "click",
+        removeOneStock
+    );
+
+
+function showStockScanMessage(
+    message,
+    error
+) {
+
+    const element =
+        document.getElementById(
+            "stockScanMessage"
+        );
+
+
+    element.textContent =
+        message;
+
+
+    element.classList.toggle(
+        "error",
+        error
+    );
+
+
+    element.classList.toggle(
+        "success",
+        !error
+    );
+
+}
+
+
+function focusStockScanner() {
+
+    setTimeout(
+        () => {
+
+            const page =
+                document.getElementById(
+                    "stockScanner"
+                );
+
+
+            if (
+                page.classList.contains(
+                    "active"
+                )
+            ) {
+
+                stockScanner.focus();
+
+            }
+
+        },
+        100
     );
 
 }
@@ -2197,6 +2533,7 @@ function createEvent() {
         );
 
         return;
+
     }
 
 
@@ -2207,19 +2544,14 @@ function createEvent() {
                 Date.now()
             ),
 
-        name:
-            name,
+        name,
 
-        date:
-            date
+        date
 
     };
 
 
-    events.push(
-        event
-    );
-
+    events.push(event);
 
     activeEventId =
         event.id;
@@ -2259,12 +2591,8 @@ function displayEvents() {
     const active =
         events.find(
             event =>
-                String(
-                    event.id
-                ) ===
-                String(
-                    activeEventId
-                )
+                String(event.id) ===
+                String(activeEventId)
         );
 
 
@@ -2276,40 +2604,29 @@ function displayEvents() {
                     String(
                         sale.eventId
                     ) ===
-                    String(
-                        active.id
-                    )
+                    String(active.id)
             );
 
 
         const total =
             eventSales.reduce(
-                (
-                    sum,
-                    sale
-                ) =>
-                    sum +
-                    sale.total,
+                (sum, sale) =>
+                    sum + sale.total,
                 0
             );
 
 
         const items =
             eventSales.reduce(
-                (
-                    sum,
-                    sale
-                ) =>
-                    sum +
-                    sale.itemCount,
+                (sum, sale) =>
+                    sum + sale.itemCount,
                 0
             );
 
 
         activeContainer.innerHTML = `
 
-            <div
-                class="active-event">
+            <div class="active-event">
 
                 <h2>
                     🟢 Active Craft Fair
@@ -2327,12 +2644,9 @@ function displayEvents() {
                     )}
                 </p>
 
+                <div class="event-stats">
 
-                <div
-                    class="event-stats">
-
-                    <div
-                        class="event-stat">
+                    <div class="event-stat">
 
                         <strong>
                             $${total.toFixed(2)}
@@ -2344,9 +2658,7 @@ function displayEvents() {
 
                     </div>
 
-
-                    <div
-                        class="event-stat">
+                    <div class="event-stat">
 
                         <strong>
                             ${items}
@@ -2358,14 +2670,11 @@ function displayEvents() {
 
                     </div>
 
-
-                    <div
-                        class="event-stat">
+                    <div class="event-stat">
 
                         <button
                             class="small-btn"
-                            onclick="
-                            finishEvent()">
+                            onclick="finishEvent()">
 
                             Finish Event
 
@@ -2379,9 +2688,7 @@ function displayEvents() {
 
         `;
 
-    }
-
-    else {
+    } else {
 
         activeContainer.innerHTML = "";
 
@@ -2392,132 +2699,110 @@ function displayEvents() {
         events
             .slice()
             .reverse()
-            .map(
-                event => {
+            .map(event => {
 
-                    const eventSales =
-                        sales.filter(
-                            sale =>
-                                String(
-                                    sale.eventId
-                                ) ===
-                                String(
-                                    event.id
-                                )
-                        );
-
-
-                    const total =
-                        eventSales.reduce(
-                            (
-                                sum,
-                                sale
-                            ) =>
-                                sum +
-                                sale.total,
-                            0
-                        );
+                const eventSales =
+                    sales.filter(
+                        sale =>
+                            String(
+                                sale.eventId
+                            ) ===
+                            String(
+                                event.id
+                            )
+                    );
 
 
-                    const items =
-                        eventSales.reduce(
-                            (
-                                sum,
-                                sale
-                            ) =>
-                                sum +
-                                sale.itemCount,
-                            0
-                        );
+                const total =
+                    eventSales.reduce(
+                        (sum, sale) =>
+                            sum + sale.total,
+                        0
+                    );
 
 
-                    const isActive =
-                        String(
-                            event.id
-                        ) ===
-                        String(
-                            activeEventId
-                        );
+                const items =
+                    eventSales.reduce(
+                        (sum, sale) =>
+                            sum + sale.itemCount,
+                        0
+                    );
 
 
-                    return `
-
-                        <div
-                            class="event-card">
-
-                            <h3>
-
-                                ${
-                                    isActive
-                                    ? "🟢 "
-                                    : ""
-                                }
-
-                                ${escapeHTML(
-                                    event.name
-                                )}
-
-                            </h3>
+                const isActive =
+                    String(event.id) ===
+                    String(activeEventId);
 
 
-                            <p>
-                                ${formatDate(
-                                    event.date
-                                )}
-                            </p>
+                return `
 
+                    <div class="event-card">
 
-                            <p>
-                                💰
-                                $${total.toFixed(2)}
-                            </p>
-
-
-                            <p>
-                                🧸
-                                ${items}
-                                items sold
-                            </p>
-
+                        <h3>
 
                             ${
-                                !isActive
-
-                                ?
-
-                                `<button
-                                    class="primary-btn"
-                                    onclick="
-                                    selectEvent(
-                                        '${event.id}'
-                                    )">
-
-                                    Select
-
-                                </button>`
-
-                                :
-
-                                `<strong>
-                                    🟢 Active
-                                </strong>`
-
+                                isActive
+                                ? "🟢 "
+                                : ""
                             }
 
-                        </div>
+                            ${escapeHTML(
+                                event.name
+                            )}
 
-                    `;
+                        </h3>
 
-                }
-            )
+                        <p>
+                            ${formatDate(
+                                event.date
+                            )}
+                        </p>
+
+                        <p>
+                            💰
+                            $${total.toFixed(2)}
+                        </p>
+
+                        <p>
+                            🧸
+                            ${items}
+                            items sold
+                        </p>
+
+                        ${
+                            !isActive
+                            ?
+
+                            `<button
+                                class="primary-btn"
+                                onclick="
+                                    selectEvent(
+                                        '${event.id}'
+                                    )
+                                ">
+
+                                Select
+
+                            </button>`
+
+                            :
+
+                            `<strong>
+                                🟢 Active
+                            </strong>`
+                        }
+
+                    </div>
+
+                `;
+
+            })
             .join("");
 
 }
 
 
-function selectEvent(
-    id
-) {
+function selectEvent(id) {
 
     activeEventId =
         String(id);
@@ -2552,24 +2837,16 @@ function displaySales() {
 
     const total =
         sales.reduce(
-            (
-                sum,
-                sale
-            ) =>
-                sum +
-                sale.total,
+            (sum, sale) =>
+                sum + sale.total,
             0
         );
 
 
     const items =
         sales.reduce(
-            (
-                sum,
-                sale
-            ) =>
-                sum +
-                sale.itemCount,
+            (sum, sale) =>
+                sum + sale.itemCount,
             0
         );
 
@@ -2582,12 +2859,8 @@ function displaySales() {
                     "Cash"
             )
             .reduce(
-                (
-                    sum,
-                    sale
-                ) =>
-                    sum +
-                    sale.total,
+                (sum, sale) =>
+                    sum + sale.total,
                 0
             );
 
@@ -2633,63 +2906,55 @@ function displaySales() {
 }
 
 
-function displayBestSellers() {
+function getBestSellerData() {
 
     const totals = {};
 
 
-    sales.forEach(
-        sale => {
+    sales.forEach(sale => {
 
-            sale.items.forEach(
-                item => {
+        sale.items.forEach(item => {
 
-                    if (
-                        !totals[
-                            item.productId
-                        ]
-                    ) {
+            if (
+                !totals[item.productId]
+            ) {
 
-                        totals[
-                            item.productId
-                        ] = {
+                totals[
+                    item.productId
+                ] = {
 
-                            name:
-                                item.name,
+                    name:
+                        item.name,
 
-                            quantity:
-                                0
+                    quantity:
+                        0
 
-                        };
+                };
 
-                    }
+            }
 
 
-                    totals[
-                        item.productId
-                    ].quantity +=
-                        item.quantity;
+            totals[
+                item.productId
+            ].quantity +=
+                item.quantity;
 
-                }
-            );
+        });
 
-        }
-    );
+    });
 
 
-    const sorted =
-        Object.values(
-            totals
-        )
+    return Object.values(totals)
         .sort(
-            (
-                a,
-                b
-            ) =>
+            (a, b) =>
                 b.quantity -
                 a.quantity
         );
 
+}
+
+
+function displayBestSellers() {
 
     const container =
         document.getElementById(
@@ -2697,7 +2962,11 @@ function displayBestSellers() {
         );
 
 
-    if (!sorted.length) {
+    const best =
+        getBestSellerData();
+
+
+    if (!best.length) {
 
         container.innerHTML =
             "<p>No sales yet.</p>";
@@ -2708,13 +2977,10 @@ function displayBestSellers() {
 
 
     container.innerHTML =
-        sorted
+        best
             .slice(0, 10)
             .map(
-                (
-                    item,
-                    index
-                ) => `
+                (item, index) => `
 
                     <div
                         class="
@@ -2752,23 +3018,22 @@ function displayPaymentBreakdown() {
     let card = 0;
 
 
-    sales.forEach(
-        sale => {
+    sales.forEach(sale => {
 
-            if (
-                sale.paymentMethod ===
-                "Cash"
-            )
-                cash += sale.total;
+        if (
+            sale.paymentMethod ===
+            "Cash"
+        )
+            cash += sale.total;
 
-            if (
-                sale.paymentMethod ===
-                "Card"
-            )
-                card += sale.total;
 
-        }
-    );
+        if (
+            sale.paymentMethod ===
+            "Card"
+        )
+            card += sale.total;
+
+    });
 
 
     document
@@ -2777,9 +3042,7 @@ function displayPaymentBreakdown() {
         )
         .innerHTML = `
 
-            <div
-                class="
-                best-seller-row">
+            <div class="best-seller-row">
 
                 <span>
                     💵 Cash
@@ -2791,10 +3054,7 @@ function displayPaymentBreakdown() {
 
             </div>
 
-
-            <div
-                class="
-                best-seller-row">
+            <div class="best-seller-row">
 
                 <span>
                     💳 Card
@@ -2837,43 +3097,29 @@ function displaySalesHistory() {
             .map(
                 sale => `
 
-                    <div
-                        class="sale-row">
+                    <div class="sale-row">
 
                         <div>
-
                             ${formatDateTime(
                                 sale.date
                             )}
-
                         </div>
 
-
                         <div>
-
                             ${sale.itemCount}
                             items
-
                         </div>
 
-
                         <div>
-
                             ${escapeHTML(
                                 sale.paymentMethod
                             )}
-
                         </div>
 
-
                         <div>
-
                             <strong>
-
                                 $${sale.total.toFixed(2)}
-
                             </strong>
-
                         </div>
 
                     </div>
@@ -2893,12 +3139,8 @@ function updateDashboard() {
 
     const totalStock =
         products.reduce(
-            (
-                sum,
-                product
-            ) =>
-                sum +
-                product.stock,
+            (sum, product) =>
+                sum + product.stock,
             0
         );
 
@@ -2913,12 +3155,8 @@ function updateDashboard() {
 
     const totalSales =
         sales.reduce(
-            (
-                sum,
-                sale
-            ) =>
-                sum +
-                sale.total,
+            (sum, sale) =>
+                sum + sale.total,
             0
         );
 
@@ -2966,9 +3204,7 @@ function updateDashboard() {
         lowList.innerHTML =
             "<p>🟢 Everything is stocked!</p>";
 
-    }
-
-    else {
+    } else {
 
         lowList.innerHTML =
             lowStock
@@ -2980,18 +3216,14 @@ function updateDashboard() {
                             best-seller-row">
 
                             <span>
-
                                 ${escapeHTML(
                                     product.name
                                 )}
-
                             </span>
 
                             <strong>
-
                                 ${product.stock}
                                 left
-
                             </strong>
 
                         </div>
@@ -3018,9 +3250,7 @@ function updateDashboard() {
         bestList.innerHTML =
             "<p>No sales yet.</p>";
 
-    }
-
-    else {
+    } else {
 
         bestList.innerHTML =
             best
@@ -3036,19 +3266,15 @@ function updateDashboard() {
                             best-seller-row">
 
                             <span>
-
                                 ${index + 1}.
                                 ${escapeHTML(
                                     item.name
                                 )}
-
                             </span>
 
                             <strong>
-
                                 ${item.quantity}
                                 sold
-
                             </strong>
 
                         </div>
@@ -3062,103 +3288,25 @@ function updateDashboard() {
 }
 
 
-function getBestSellerData() {
-
-    const totals = {};
-
-
-    sales.forEach(
-        sale => {
-
-            sale.items.forEach(
-                item => {
-
-                    if (
-                        !totals[
-                            item.productId
-                        ]
-                    ) {
-
-                        totals[
-                            item.productId
-                        ] = {
-
-                            name:
-                                item.name,
-
-                            quantity:
-                                0
-
-                        };
-
-                    }
-
-
-                    totals[
-                        item.productId
-                    ].quantity +=
-                        item.quantity;
-
-                }
-            );
-
-        }
-    );
-
-
-    return Object.values(
-        totals
-    )
-    .sort(
-        (
-            a,
-            b
-        ) =>
-            b.quantity -
-            a.quantity
-    );
-
-}
-
-
 /* =====================================================
    HELPERS
 ===================================================== */
 
-function escapeHTML(
-    value
-) {
+function escapeHTML(value) {
 
     return String(
         value ?? ""
     )
-    .replaceAll(
-        "&",
-        "&amp;"
-    )
-    .replaceAll(
-        "<",
-        "&lt;"
-    )
-    .replaceAll(
-        ">",
-        "&gt;"
-    )
-    .replaceAll(
-        '"',
-        "&quot;"
-    )
-    .replaceAll(
-        "'",
-        "&#039;"
-    );
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 
 }
 
 
-function formatDate(
-    date
-) {
+function formatDate(date) {
 
     if (!date)
         return "No date";
@@ -3167,25 +3315,23 @@ function formatDate(
     return new Date(
         date + "T00:00:00"
     )
-    .toLocaleDateString();
+        .toLocaleDateString();
 
 }
 
 
-function formatDateTime(
-    date
-) {
+function formatDateTime(date) {
 
     return new Date(
         date
     )
-    .toLocaleString();
+        .toLocaleString();
 
 }
 
 
 /* =====================================================
-   REFRESH
+   REFRESH EVERYTHING
 ===================================================== */
 
 function refreshEverything() {
