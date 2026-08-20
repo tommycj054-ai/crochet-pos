@@ -24,7 +24,6 @@
     if (typeof saveData === 'function') saveData();
   };
 
-  // Bundle pricing fields.
   const modal = document.getElementById('productModal');
   if (modal && !document.getElementById('bundleQty')) {
     const box = modal.querySelector('.modal-box'), buttons = box?.querySelector('.modal-buttons');
@@ -34,6 +33,7 @@
       box.insertBefore(wrap, buttons);
     }
   }
+
   const save = document.getElementById('saveProduct');
   if (save && !save.dataset.bundleHook) {
     save.dataset.bundleHook = '1';
@@ -44,7 +44,6 @@
     }, 100));
   }
 
-  // Show bundle-aware totals in the cart without replacing the existing cart renderer.
   const oldCart = window.displayCart;
   if (typeof oldCart === 'function' && !window.__crochetPOSCartHook) {
     window.__crochetPOSCartHook = true;
@@ -57,7 +56,6 @@
     };
   }
 
-  // Cash payment with quick amounts and automatic change.
   const cashButton = document.getElementById('cashCheckout');
   if (cashButton && !cashButton.dataset.featureHook) {
     cashButton.dataset.featureHook = '1';
@@ -84,7 +82,6 @@
     });
   }
 
-  // Undo last sale and restore inventory.
   const salesPage = document.getElementById('sales');
   if (salesPage && !document.getElementById('undoLastSale')) {
     const b = document.createElement('button'); b.id='undoLastSale'; b.className='secondary-btn'; b.textContent='↩️ Undo Last Sale';
@@ -98,7 +95,6 @@
     salesPage.querySelector('.page-heading')?.appendChild(b);
   }
 
-  // Delete confirmation.
   const originalDelete = window.deleteProduct;
   if (typeof originalDelete === 'function' && !window.__crochetPOSDeleteHook) {
     window.__crochetPOSDeleteHook = true;
